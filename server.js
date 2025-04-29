@@ -1,43 +1,50 @@
+// server.js
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import logger from './logger.js';
+import logger from './services/logger.js';
+import { appendToSheet } from './services/googleSheet.service.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Resolve __dirname (כי אנחנו ב-ESM)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Serve static files (frontend dist)
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// API route
-app.post('/submit', (req, res) => {
-  const { creature, castle, hero, phone } = req.body;
-
-  if (!creature || !castle || !hero || !phone) {
-    logger.warn('Invalid submission attempt: Missing fields');
-    return res.status(400).json({ message: 'Missing fields' });
+app.post('/submit', async (req, res) => {
+  logger.info('Data received:', req.body);
+  try {
+    await appendToSheet(req.body);
+    res.status(200).json({ message: 'Form submitted successfully' });
+  } catch (err) {
+    logger.error('Error submitting to Google Sheets:', err);
+    res.status(500).json({ message: 'Failed to submit form' });
   }
-
-  logger.info(`Form submitted: Creature=${creature}, Castle=${castle}, Hero=${hero}, Phone=${phone}`);
-  res.status(200).json({ message: 'Form submitted successfully' });
 });
 
-// Catch-all to serve index.html (for SPA routing)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// catch-all to serve index.html for SPA routing
 app.get('*', (req, res) => {
-  logger.info(`Serving frontend for path: ${req.originalUrl}`);
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  const requestedFile = path.join(__dirname, 'dist', req.originalUrl);
+  res.sendFile(requestedFile, (err) => {
+    if (err) {
+      logger.info('Fallback to index.html due to missing file:', req.originalUrl);
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    } else {
+      logger.info('Serving static file:', req.originalUrl);
+    }
+  });
 });
 
-// Start server
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
 });
