@@ -33,7 +33,7 @@ export async function appendToSheet(rowData) {
 
   const request = {
     spreadsheetId,
-    range: 'Form Responses!A1', // אתה יכול לשנות טווח אם צריך
+    range: 'WhatsApp Requests!A1', // אתה יכול לשנות טווח אם צריך
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     resource: {
