@@ -1,11 +1,11 @@
-// server.js
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import logger from './services/logger.js';
-import { appendToSheet } from './services/googleSheet.service.js';
-import dotenv from 'dotenv';
+// // server.js
+// import express from 'express';
+// import cors from 'cors';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+// import logger from './services/logger.js';
+// import { appendToSheet } from './services/googleSheet.service.js';
+// import dotenv from 'dotenv';
 // dotenv.config();
 
 // const app = express();
@@ -45,6 +45,19 @@ import dotenv from 'dotenv';
 //   });
 // });
 
+// app.listen(PORT, () => {
+//   logger.info(`Server running on port ${PORT}`);
+// });\
+
+import express from 'express';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Server is working!');
+});
+
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
